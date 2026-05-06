@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -47,7 +49,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (result.containsKey('user_id') ||
         result['message'] == 'User registered' ||
-        result.containsKey('message') && result['message'].toString().contains('registered')) {
+        result.containsKey('message') &&
+            result['message'].toString().contains('registered')) {
       setState(() => _successMessage = 'Registrasi berhasil! Silakan login.');
       await Future.delayed(const Duration(seconds: 2));
       if (mounted) Navigator.pop(context);
@@ -55,6 +58,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() => _errorMessage = result['message'] ?? 'Registrasi gagal');
     }
   }
+
+  Future<void> _registerWithGoogle() async {
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  try {
+    final auth = context.read<AuthProvider>();
+    final success = await auth.loginWithGoogle();
+
+    if (!mounted) return;
+
+    if (success) {
+      setState(() => _successMessage = 'Berhasil masuk dengan Google!');
+    } else {
+      setState(() => _errorMessage = 'Login Google gagal');
+    }
+  } catch (e) {
+    if (!mounted) return;
+    setState(() => _errorMessage = 'Error: ${e.toString()}');
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+}
 
   @override
   void dispose() {
@@ -340,6 +368,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       fontSize: 16,
                                     ),
                                   ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Divider
+                        const Row(
+                          children: [
+                            Expanded(child: Divider(color: Colors.white24)),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                'atau',
+                                style: TextStyle(color: Colors.white38),
+                              ),
+                            ),
+                            Expanded(child: Divider(color: Colors.white24)),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Google Register Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: OutlinedButton.icon(
+                            onPressed: _registerWithGoogle,
+                            icon: const Icon(
+                              Icons.g_mobiledata,
+                              size: 28,
+                              color: Colors.white,
+                            ),
+                            label: const Text(
+                              'Daftar dengan Google',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.white24),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                           ),
                         ),
                       ],

@@ -14,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
 
@@ -40,9 +41,32 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       setState(() => _errorMessage = 'Error: ${e.toString()}');
     } finally {
-      if (mounted) setState(() => _isLoading = false); // ← selalu stop loading
+      if (mounted) setState(() => _isLoading = false);
     }
   }
+
+  Future<void> _loginWithGoogle() async {
+  setState(() {
+    _isGoogleLoading = true;
+    _errorMessage = null;
+  });
+
+  try {
+    final auth = context.read<AuthProvider>();
+    final success = await auth.loginWithGoogle();
+
+    if (!mounted) return;
+
+    if (!success) {
+      setState(() => _errorMessage = 'Login Google gagal');
+    }
+  } catch (e) {
+    if (!mounted) return;
+    setState(() => _errorMessage = 'Error: ${e.toString()}');
+  } finally {
+    if (mounted) setState(() => _isGoogleLoading = false);
+  }
+}
 
   @override
   void dispose() {
@@ -69,22 +93,29 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo / Icon
+                  // Logo
                   Container(
-                    width: 100,
-                    height: 100,
+                    width: 160,
+                    height: 160,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFFFFD700).withOpacity(0.2),
                       border: Border.all(
                         color: const Color(0xFFFFD700),
                         width: 2,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
                     ),
-                    child: const Icon(
-                      Icons.shield,
-                      size: 50,
-                      color: Color(0xFFFFD700),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -104,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 40),
 
-                  // Card Form
+                  // Form Card
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -243,6 +274,52 @@ class _LoginScreenState extends State<LoginScreen> {
                                       fontSize: 16,
                                     ),
                                   ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Divider
+                        const Row(
+                          children: [
+                            Expanded(child: Divider(color: Colors.white24)),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                'atau',
+                                style: TextStyle(color: Colors.white38),
+                              ),
+                            ),
+                            Expanded(child: Divider(color: Colors.white24)),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Google Login Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: OutlinedButton.icon(
+                            onPressed: _isGoogleLoading?null: _loginWithGoogle,
+                            icon: const Icon(
+                              Icons.g_mobiledata,
+                              size: 28,
+                              color: Colors.white,
+                            ),
+                            label: const Text(
+                              'Login dengan Google',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.white24),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                           ),
                         ),
                       ],

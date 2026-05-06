@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:genshin_store_app/widgets/background_wrapper.dart';
 import 'package:provider/provider.dart';
 import '../../models/wallet.dart';
 import '../../providers/auth_provider.dart';
@@ -36,7 +37,10 @@ class _WalletScreenState extends State<WalletScreen> {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan nominal yang valid'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Masukkan nominal yang valid'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -90,7 +94,10 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
           ElevatedButton(
             onPressed: _topUp,
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700), foregroundColor: Colors.black),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: Colors.black,
+            ),
             child: const Text('Top Up'),
           ),
         ],
@@ -100,68 +107,102 @@ class _WalletScreenState extends State<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0D1B2A),
-        title: const Text('Wallet', style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () => context.read<AuthProvider>().logout(),
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFD700)))
-          : Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  // Balance Card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1B2A4A), Color(0xFF2A3F6A)],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFFFD700).withOpacity(0.3)),
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.account_balance_wallet, color: Color(0xFFFFD700), size: 48),
-                        const SizedBox(height: 16),
-                        const Text('Saldo Kamu', style: TextStyle(color: Colors.white54, fontSize: 14)),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Rp ${_wallet!.balance.toStringAsFixed(0)}',
-                          style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Top Up Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: _showTopUpDialog,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Top Up', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFFD700),
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+    return BackgroundWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0D1B2A),
+          title: const Text(
+            'Wallet',
+            style: TextStyle(
+              color: Color(0xFFFFD700),
+              fontWeight: FontWeight.bold,
             ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout, color: Colors.white),
+              onPressed: () => context.read<AuthProvider>().logout(),
+            ),
+          ],
+        ),
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+              )
+            : Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // Balance Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(28),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1B2A4A), Color(0xFF2A3F6A)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withOpacity(0.3),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.account_balance_wallet,
+                            color: Color(0xFFFFD700),
+                            size: 48,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Saldo Kamu',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Rp ${_wallet!.balance.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Top Up Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: _showTopUpDialog,
+                        icon: const Icon(Icons.add),
+                        label: const Text(
+                          'Top Up',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFD700),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ),
     );
   }
 }

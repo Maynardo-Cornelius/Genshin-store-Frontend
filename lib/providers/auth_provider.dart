@@ -34,6 +34,23 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // ← tambahkan fungsi ini
+  Future<bool> loginWithGoogle() async {
+    try {
+      final result = await _authService.loginWithGoogle();
+      if (result['token'] != null) {
+        _token = result['token'];
+        _role = result['role'];
+        await _authService.saveToken(_token!, _role!);
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     await _authService.logout();
     _token = null;

@@ -6,7 +6,7 @@ class ApiConstants {
   static const String register = '$baseUrl/auth/register';
   static const String login = '$baseUrl/auth/login';
   static const String googleAuth = '$baseUrl/auth/google';
-
+  static const String googleSignIn = '$baseUrl/auth/google/signin';
   // Weapons
   static const String weapons = '$baseUrl/weapons';
 
