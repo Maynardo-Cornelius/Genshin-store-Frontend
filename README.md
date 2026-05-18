@@ -1,4 +1,4 @@
-# genshin_store_app
+# Genshin Store
 
 A new Flutter project.
 
