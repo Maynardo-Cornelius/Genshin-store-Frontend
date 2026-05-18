@@ -1,6 +1,6 @@
 # Genshin Store
 
-A new Flutter project.
+Genshin Store is store application to buy various weapons
 
 ## Getting Started
 
