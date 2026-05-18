@@ -1,6 +1,6 @@
 # Genshin Store
 
-Genshin Store is store application to buy various weapons
+Genshin Store is an application that provides numerous Teyvat weapons which the user can buy in the application.
 
 ## Getting Started
 
