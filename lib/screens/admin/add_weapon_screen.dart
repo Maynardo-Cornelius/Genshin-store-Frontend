@@ -40,16 +40,34 @@ class _AddWeaponScreenState extends State<AddWeaponScreen> {
     if (picked != null) setState(() => _imageFile = File(picked.path));
   }
 
+  void _showSnackBar(String message, bool isSuccess) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(isSuccess ? Icons.check_circle : Icons.error, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: isSuccess ? Colors.green.shade700 : Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (_nameController.text.isEmpty ||
         _priceController.text.isEmpty ||
         _stockController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Nama, harga, dan stok wajib diisi'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showSnackBar('Nama, harga, dan stok wajib diisi', false);
+      return;
+    }
+
+    if (_imageFile == null) {
+      _showSnackBar('Mohon pilih gambar weapon terlebih dahulu', false);
       return;
     }
 
@@ -70,20 +88,10 @@ class _AddWeaponScreenState extends State<AddWeaponScreen> {
     setState(() => _isLoading = false);
 
     if (result['weapon_id'] != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Weapon berhasil ditambahkan'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      _showSnackBar('Weapon berhasil ditambahkan ke katalog', true);
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Gagal'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showSnackBar(result['message'] ?? 'Gagal menambahkan weapon', false);
     }
   }
 
@@ -93,134 +101,191 @@ class _AddWeaponScreenState extends State<AddWeaponScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF0D1B2A),
+          backgroundColor: const Color(0xFF0D1B2A).withOpacity(0.9),
+          elevation: 0,
+          centerTitle: true,
           iconTheme: const IconThemeData(color: Colors.white),
           title: const Text(
-            'Tambah Weapon',
-            style: TextStyle(color: Color(0xFFFFD700)),
+            'Tambah Weapon Baru',
+            style: TextStyle(
+              color: Color(0xFFFFD700),
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
           ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image picker
+              const Text(
+                'Gambar Senjata',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 12),
               GestureDetector(
                 onTap: _pickImage,
                 child: Container(
                   width: double.infinity,
-                  height: 180,
+                  height: 200,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1B2A4A),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white24),
+                    color: const Color(0xFF0D1B2A).withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _imageFile != null 
+                          ? const Color(0xFFFFD700) 
+                          : const Color(0xFFFFD700).withOpacity(0.3),
+                      width: 1.5,
+                    ),
                   ),
                   child: _imageFile != null
                       ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(_imageFile!, fit: BoxFit.cover),
+                          borderRadius: BorderRadius.circular(15),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.file(_imageFile!, fit: BoxFit.cover),
+                              Container(color: Colors.black.withOpacity(0.2)),
+                              const Center(
+                                child: Icon(Icons.edit, color: Colors.white70, size: 40),
+                              ),
+                            ],
+                          ),
                         )
-                      : const Column(
+                      : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.add_photo_alternate,
-                              color: Colors.white38,
-                              size: 48,
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFFFFD700).withOpacity(0.1),
+                              ),
+                              child: const Icon(
+                                Icons.add_photo_alternate_outlined,
+                                color: Color(0xFFFFD700),
+                                size: 40,
+                              ),
                             ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Tap untuk pilih gambar',
-                              style: TextStyle(color: Colors.white38),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Tap untuk mengunggah gambar',
+                              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Format: JPG, PNG (Max 2MB)',
+                              style: TextStyle(color: Colors.white38, fontSize: 12),
                             ),
                           ],
                         ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
 
-              _buildTextField(_nameController, 'Nama Weapon', Icons.shield),
+              const Text(
+                'Detail Informasi',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
               const SizedBox(height: 16),
 
-              // Type dropdown
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedType,
-                    isExpanded: true,
-                    dropdownColor: const Color(0xFF1B2A4A),
-                    style: const TextStyle(color: Colors.white),
-                    icon: const Icon(
-                      Icons.arrow_drop_down,
-                      color: Colors.white54,
-                    ),
-                    items: _types
-                        .map(
-                          (t) => DropdownMenuItem(
-                            value: t,
-                            child: Text(t.toUpperCase()),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (val) => setState(() => _selectedType = val!),
+              _buildTextField(_nameController, 'Nama Weapon', Icons.shield_outlined),
+              const SizedBox(height: 16),
+
+              DropdownButtonFormField<String>(
+                value: _selectedType,
+                dropdownColor: const Color(0xFF1B2A4A),
+                icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFFFD700)),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                decoration: InputDecoration(
+                  labelText: 'Tipe Senjata',
+                  labelStyle: const TextStyle(color: Colors.white54),
+                  prefixIcon: const Icon(Icons.category_outlined, color: Colors.white54),
+                  filled: true,
+                  fillColor: const Color(0xFF0D1B2A).withOpacity(0.5),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.white24),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFFFD700)),
                   ),
                 ),
+                items: _types.map((t) => DropdownMenuItem(
+                  value: t,
+                  child: Text(t.toUpperCase()),
+                )).toList(),
+                onChanged: (val) => setState(() => _selectedType = val!),
               ),
               const SizedBox(height: 16),
 
               _buildTextField(
                 _descController,
-                'Deskripsi',
-                Icons.description,
-                maxLines: 3,
+                'Deskripsi Senjata',
+                Icons.description_outlined,
+                maxLines: 4,
               ),
               const SizedBox(height: 16),
-              _buildTextField(
-                _stockController,
-                'Stok',
-                Icons.inventory,
-                keyboardType: TextInputType.number,
+
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: _buildTextField(
+                      _stockController,
+                      'Stok',
+                      Icons.inventory_2_outlined,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: _buildTextField(
+                      _priceController,
+                      'Harga',
+                      Icons.monetization_on_outlined,
+                      keyboardType: TextInputType.number,
+                      prefixText: 'Rp ',
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                _priceController,
-                'Harga',
-                Icons.monetization_on,
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 40),
 
               SizedBox(
                 width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
+                height: 55,
+                child: ElevatedButton.icon(
                   onPressed: _isLoading ? null : _submit,
+                  icon: _isLoading 
+                      ? const SizedBox.shrink() 
+                      : const Icon(Icons.save),
+                  label: _isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(strokeWidth: 3, color: Colors.black),
+                        )
+                      : const Text(
+                          'Simpan Weapon',
+                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1),
+                        ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFD700),
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
+                    elevation: 8,
+                    shadowColor: const Color(0xFFFFD700).withOpacity(0.5),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.black,
-                        )
-                      : const Text(
-                          'Simpan',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -234,16 +299,21 @@ class _AddWeaponScreenState extends State<AddWeaponScreen> {
     IconData icon, {
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
+    String? prefixText,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.white, fontSize: 16),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white54),
         prefixIcon: Icon(icon, color: Colors.white54),
+        prefixText: prefixText,
+        prefixStyle: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 16),
+        filled: true,
+        fillColor: const Color(0xFF0D1B2A).withOpacity(0.5),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.white24),

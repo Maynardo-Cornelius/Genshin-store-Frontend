@@ -61,26 +61,31 @@ class _WeaponStoreScreenState extends State<WeaponStoreScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF0D1B2A),
+          automaticallyImplyLeading: false, 
+          backgroundColor: const Color(0xFF0D1B2A).withOpacity(0.8),
+          elevation: 0,
+          centerTitle: true,
           title: const Text(
             'Weapon Store',
             style: TextStyle(
               color: Color(0xFFFFD700),
               fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
             ),
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.logout, color: Colors.white),
+              icon: const Icon(Icons.logout, color: Colors.white70),
               onPressed: () => context.read<AuthProvider>().logout(),
             ),
           ],
         ),
         body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Filter chips
+            const SizedBox(height: 12),
             SizedBox(
-              height: 50,
+              height: 40,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -89,60 +94,91 @@ class _WeaponStoreScreenState extends State<WeaponStoreScreen> {
                   final type = _types[index];
                   final isSelected = _selectedType == type['value'];
                   return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(type['label']!),
-                      selected: isSelected,
-                      onSelected: (_) => _filterByType(type['value']!),
-                      backgroundColor: const Color(0xFF1B2A4A),
-                      selectedColor: const Color(0xFFFFD700),
-                      labelStyle: TextStyle(
-                        color: isSelected ? Colors.black : Colors.white,
-                        fontWeight: FontWeight.w500,
+                    padding: const EdgeInsets.only(right: 12),
+                    child: InkWell(
+                      onTap: () => _filterByType(type['value']!),
+                      borderRadius: BorderRadius.circular(20),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF1B2A4A),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected ? Colors.transparent : const Color(0xFFFFD700).withOpacity(0.3),
+                          ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700).withOpacity(0.4),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  )
+                                ]
+                              : [],
+                        ),
+                        child: Text(
+                          type['label']!,
+                          style: TextStyle(
+                            color: isSelected ? Colors.black : Colors.white70,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
-                      checkmarkColor: Colors.black,
                     ),
                   );
                 },
               ),
             ),
+            const SizedBox(height: 16),
 
-            // Weapon grid
             Expanded(
               child: _isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFFFD700),
-                      ),
+                      child: CircularProgressIndicator(color: Color(0xFFFFD700)),
                     )
                   : _filtered.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Tidak ada weapon',
-                        style: TextStyle(color: Colors.white54),
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _loadWeapons,
-                      child: GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
+                      ? _buildEmptyState()
+                      : RefreshIndicator(
+                          color: const Color(0xFFFFD700),
+                          backgroundColor: const Color(0xFF1B2A4A),
+                          onRefresh: _loadWeapons,
+                          child: GridView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              childAspectRatio: 0.75,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
+                              childAspectRatio: 0.68,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
                             ),
-                        itemCount: _filtered.length,
-                        itemBuilder: (context, index) {
-                          final weapon = _filtered[index];
-                          return _WeaponCard(weapon: weapon);
-                        },
-                      ),
-                    ),
+                            itemCount: _filtered.length,
+                            itemBuilder: (context, index) {
+                              final weapon = _filtered[index];
+                              return _WeaponCard(weapon: weapon);
+                            },
+                          ),
+                        ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, size: 64, color: Colors.white.withOpacity(0.2)),
+          const SizedBox(height: 16),
+          const Text(
+            'Senjata tidak ditemukan',
+            style: TextStyle(color: Colors.white54, fontSize: 16),
+          ),
+        ],
       ),
     );
   }
@@ -152,25 +188,28 @@ class _WeaponCard extends StatelessWidget {
   final Weapon weapon;
   const _WeaponCard({required this.weapon});
 
+  String _formatRupiah(double amount) {
+    return amount.toStringAsFixed(0).replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        );
+  }
+
   Color _typeColor(String type) {
-    switch (type) {
-      case 'sword':
-        return Colors.blue;
-      case 'claymore':
-        return Colors.red;
-      case 'polearm':
-        return Colors.orange;
-      case 'bow':
-        return Colors.green;
-      case 'catalyst':
-        return Colors.purple;
-      default:
-        return Colors.grey;
+    switch (type.toLowerCase()) {
+      case 'sword': return Colors.blueAccent;
+      case 'claymore': return Colors.redAccent;
+      case 'polearm': return Colors.orangeAccent;
+      case 'bow': return Colors.greenAccent;
+      case 'catalyst': return Colors.purpleAccent;
+      default: return Colors.grey;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isOutOfStock = weapon.stock == 0;
+
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -178,76 +217,139 @@ class _WeaponCard extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1B2A4A),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1B2A4A).withOpacity(0.9),
+              const Color(0xFF0D1B2A).withOpacity(0.9),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFFFD700).withOpacity(0.3),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 6,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image
             Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
+              flex: 3,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.2),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                 ),
-                child: WeaponImage(
-                  image: weapon.image,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Hero(
+                      tag: 'weapon-${weapon.weaponId}',
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                        child: WeaponImage(
+                          image: weapon.image,
+                          width: double.infinity,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    
+                    if (isOutOfStock)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'HABIS',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
 
-            // Info
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    weapon.weaponName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          weapon.weaponName,
+                          style: TextStyle(
+                            color: isOutOfStock ? Colors.white54 : Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _typeColor(weapon.weaponType).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: _typeColor(weapon.weaponType).withOpacity(0.5)),
+                          ),
+                          child: Text(
+                            weapon.weaponType.toUpperCase(),
+                            style: TextStyle(
+                              color: _typeColor(weapon.weaponType),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Rp ${_formatRupiah(weapon.price)}',
+                          style: TextStyle(
+                            color: isOutOfStock ? Colors.white38 : const Color(0xFFFFD700),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Stok: ${weapon.stock}',
+                          style: TextStyle(
+                            color: isOutOfStock ? Colors.redAccent : Colors.white54,
+                            fontSize: 11,
+                            fontWeight: isOutOfStock ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ],
                     ),
-                    decoration: BoxDecoration(
-                      color: _typeColor(weapon.weaponType).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      weapon.weaponType.toUpperCase(),
-                      style: TextStyle(
-                        color: _typeColor(weapon.weaponType),
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Rp ${weapon.price.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      color: Color(0xFFFFD700),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  Text(
-                    'Stock: ${weapon.stock}',
-                    style: const TextStyle(color: Colors.white38, fontSize: 11),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

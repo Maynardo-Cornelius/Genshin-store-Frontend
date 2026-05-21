@@ -23,23 +23,42 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     return BackgroundWrapper(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: _screens[_currentIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: const Color(0xFF1B2A4A),
-          selectedItemColor: const Color(0xFFFFD700),
-          unselectedItemColor: Colors.white38,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.inventory),
-              label: 'Weapons',
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _screens,
+        ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color: const Color(0xFFFFD700).withOpacity(0.2),
+                width: 1,
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long),
-              label: 'Transactions',
-            ),
-          ],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) => setState(() => _currentIndex = index),
+            backgroundColor: const Color(0xFF1B2A4A),
+            selectedItemColor: const Color(0xFFFFD700),
+            unselectedItemColor: Colors.white54,
+            type: BottomNavigationBarType.fixed,
+            selectedIconTheme: const IconThemeData(size: 28),
+            unselectedIconTheme: const IconThemeData(size: 24),
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.inventory_2_outlined),
+                activeIcon: Icon(Icons.inventory_2),
+                label: 'Katalog',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.receipt_long_outlined),
+                activeIcon: Icon(Icons.receipt_long),
+                label: 'Transaksi',
+              ),
+            ],
+          ),
         ),
       ),
     );
