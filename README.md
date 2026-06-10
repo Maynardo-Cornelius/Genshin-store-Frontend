@@ -1,6 +1,6 @@
-# genshin_store_app
+# Genshin Store
 
-A new Flutter project.
+Genshin Store is an application that provides numerous Teyvat weapons which the user can buy in the application.
 
 ## Getting Started
 
